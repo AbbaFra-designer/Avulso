@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doppia Libertà — Preview</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0a0a0f;
+      --bg2: #12121a;
+      --accent: #c9a96e;
+      --text: #f0ede8;
+      --text-dim: rgba(240,237,232,0.6);
+      --text-faint: rgba(240,237,232,0.4);
+      --border: rgba(201,169,110,0.3);
+      --border-strong: rgba(201,169,110,0.6);
+    }
+
+    html, body { height: 100%; background: #06060a; font-family: 'Space Grotesk', sans-serif; }
+
+    /* ── NAV BAR ─────────────────────────────────────────── */
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+      background: rgba(6,6,10,0.92); backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(201,169,110,0.15);
+      display: flex; align-items: center; gap: 0; overflow-x: auto;
+      padding: 0 16px;
+    }
+    .nav-label {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase;
+      color: rgba(201,169,110,0.5); white-space: nowrap;
+      padding: 0 12px; flex-shrink: 0;
+    }
+    .nav-btn {
+      padding: 14px 16px; background: none; border: none; cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif; font-size: 13px;
+      color: var(--text-dim); white-space: nowrap; flex-shrink: 0;
+      border-bottom: 2px solid transparent; transition: all .2s;
+    }
+    .nav-btn:hover { color: var(--text); }
+    .nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* ── SCREENS ─────────────────────────────────────────── */
+    .screen {
+      display: none; min-height: 100vh; padding-top: 49px;
+      background: var(--bg); position: relative; overflow: hidden;
+    }
+    .screen.active { display: block; }
+
+    /* ── FONTS ───────────────────────────────────────────── */
+    .font-c { font-family: 'Cormorant Garamond', serif; }
+
+    /* ── LANDING ─────────────────────────────────────────── */
+    #screen-landing .inner {
+      position: relative; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; min-height: calc(100vh - 49px);
+      text-align: center; padding: 40px 24px; gap: 28px;
+    }
+    #dots-canvas { position: absolute; inset: 0; z-index: 0; }
+    .landing-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 24px; }
+    .landing-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(52px, 8vw, 88px);
+      color: var(--text); font-weight: 400; line-height: 1.05;
+    }
+    .landing-sub {
+      font-size: 15px; color: var(--text-dim); max-width: 400px;
+      line-height: 1.7; letter-spacing: 0.03em;
+    }
+    .landing-note {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px; color: var(--text-faint); letter-spacing: 0.1em;
+      text-transform: uppercase; font-style: italic;
+    }
+    .btn-primary {
+      padding: 14px 52px; border: 1px solid var(--accent);
+      background: transparent; color: var(--accent);
+      font-family: 'Space Grotesk', sans-serif; font-size: 15px;
+      font-weight: 500; cursor: pointer; letter-spacing: 0.06em;
+      transition: all .3s; margin-top: 8px;
+    }
+    .btn-primary:hover { background: var(--accent); color: var(--bg); }
+
+    /* ── STEP INDICATOR ──────────────────────────────────── */
+    .step-bar {
+      position: fixed; top: 49px; left: 0; right: 0; z-index: 900;
+      background: rgba(10,10,15,0.95); padding: 16px 24px;
+      display: flex; align-items: center; justify-content: center; gap: 12px;
+    }
+    .step-dot {
+      width: 28px; height: 28px; border-radius: 50%; display: flex;
+      align-items: center; justify-content: center; font-size: 13px;
+      font-weight: 500; border: 1px solid var(--border);
+      color: var(--text-faint); background: transparent; transition: all .3s;
+    }
+    .step-dot.active { border-color: var(--accent); color: var(--accent); background: rgba(201,169,110,0.08); }
+    .step-dot.done { background: var(--accent); color: var(--bg); border-color: var(--accent); }
+    .step-line { flex: 1; max-width: 60px; height: 1px; background: var(--border); }
+
+    /* ── MODULE LAYOUT ───────────────────────────────────── */
+    .module-wrap {
+      padding: 120px 24px 60px;
+      display: flex; flex-direction: column; align-items: center; gap: 32px;
+    }
+    .module-header { text-align: center; position: relative; width: 100%; max-width: 700px; }
+    .module-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(28px, 5vw, 40px); color: var(--text);
+      font-weight: 600; margin-bottom: 10px;
+    }
+    .module-desc { font-size: 15px; color: var(--text-dim); max-width: 520px; margin: 0 auto; line-height: 1.6; }
+    .q-btn {
+      position: absolute; right: 0; top: 0;
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid var(--border-strong); background: transparent;
+      color: var(--accent); cursor: pointer; font-size: 14px;
+    }
+
+    /* ── MODULE A ────────────────────────────────────────── */
+    .img-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 16px; width: 100%; max-width: 700px;
+    }
+    .img-card { display: flex; flex-direction: column; gap: 8px; }
+    .img-wrap {
+      position: relative; border-radius: 8px; overflow: hidden;
+      border: 2px solid transparent; aspect-ratio: 3/2; cursor: pointer;
+      transition: border .3s;
+    }
+    .img-wrap:hover { border-color: var(--border); }
+    .img-wrap.ranked { border-color: rgba(201,169,110,0.5); cursor: default; }
+    .img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .rank-badge {
+      position: absolute; top: 8px; left: 8px;
+      width: 26px; height: 26px; border-radius: 50%;
+      background: var(--accent); color: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700;
+    }
+    .emotion-select {
+      background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+      border-radius: 6px; color: var(--text); padding: 7px 10px;
+      font-family: 'Space Grotesk', sans-serif; font-size: 13px;
+      cursor: pointer; outline: none; width: 100%;
+    }
+    .emotion-select option { background: #1a1a24; }
+    .rank-hint { font-size: 13px; color: var(--text-faint); text-align: center; }
+
+    /* ── MODULE B ────────────────────────────────────────── */
+    .field-wrap { width: 100%; max-width: 600px; }
+    textarea {
+      width: 100%; height: 120px; background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px; padding: 16px; resize: none; outline: none; line-height: 1.6;
+      transition: border .2s;
+    }
+    textarea:focus { border-color: rgba(201,169,110,0.7); }
+    .char-count { text-align: right; font-size: 12px; color: var(--text-faint); margin-top: 4px; }
+    .gestures { display: flex; flex-wrap: wrap; gap: 12px; }
+    .gesture-btn {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 20px; border-radius: 999px;
+      border: 1px solid rgba(201,169,110,0.25); background: transparent;
+      color: var(--text-dim); font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px; cursor: pointer; transition: all .3s;
+    }
+    .gesture-btn:hover { border-color: var(--border-strong); color: var(--text); }
+    .gesture-btn.selected {
+      border-color: var(--accent); background: rgba(201,169,110,0.15);
+      color: var(--accent);
+    }
+    .gesture-icon { font-size: 18px; }
+
+    /* ── MODULE C ────────────────────────────────────────── */
+    .tempo-labels { display: flex; justify-content: space-between; margin-bottom: 12px; }
+    .tempo-label { font-size: 13px; color: var(--text-faint); }
+    input[type=range] {
+      -webkit-appearance: none; width: 100%; height: 2px;
+      background: linear-gradient(to right, var(--accent) var(--pct, 50%), rgba(201,169,110,0.2) var(--pct, 50%));
+      outline: none; cursor: pointer; border-radius: 2px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none; width: 18px; height: 18px; border-radius: 50%;
+      background: var(--accent); cursor: pointer;
+      box-shadow: 0 0 8px rgba(201,169,110,0.5);
+    }
+
+    /* ── AVATAR PREVIEW ──────────────────────────────────── */
+    #screen-avatar .inner {
+      display: flex; flex-direction: column; align-items: center;
+      justify-content: center; min-height: calc(100vh - 49px);
+      gap: 40px; padding: 60px 24px; text-align: center;
+    }
+    .avatar-canvas-wrap {
+      width: 280px; height: 280px; position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #avatar-canvas { border-radius: 50%; }
+    .avatar-info { max-width: 500px; }
+    .avatar-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 13px; letter-spacing: 0.15em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 16px;
+    }
+    .avatar-reading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 20px; color: var(--text); line-height: 1.7; font-style: italic;
+    }
+    .avatar-tags { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-top: 20px; }
+    .avatar-tag {
+      padding: 5px 14px; border-radius: 999px;
+      border: 1px solid var(--border); font-size: 12px;
+      color: var(--text-dim); letter-spacing: 0.05em;
+    }
+    .btn-enter {
+      padding: 14px 56px; border: 1px solid var(--accent);
+      background: var(--accent); color: var(--bg);
+      font-family: 'Space Grotesk', sans-serif; font-size: 15px;
+      font-weight: 500; cursor: pointer; letter-spacing: 0.06em;
+      transition: all .3s;
+    }
+    .btn-enter:hover { background: transparent; color: var(--accent); }
+
+    /* ── SHARED SPACE ────────────────────────────────────── */
+    #screen-space { overflow: hidden; }
+    #space-canvas { position: absolute; top: 49px; left: 0; right: 0; bottom: 0; width: 100%; }
+    #space-ui {
+      position: absolute; top: 60px; left: 20px; z-index: 10;
+    }
+    .space-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 14px; color: var(--text-faint); letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+    .space-count { font-size: 13px; color: var(--text-faint); margin-top: 4px; }
+    #avatar-tooltip {
+      position: absolute; pointer-events: none; z-index: 20;
+      background: rgba(18,18,26,0.9); border: 1px solid var(--border);
+      border-radius: 10px; padding: 16px 20px; max-width: 260px;
+      display: none;
+    }
+    .tooltip-color { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .tooltip-reading {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 15px; color: var(--text); line-height: 1.6; font-style: italic;
+      margin-top: 8px;
+    }
+    .tooltip-tags { margin-top: 8px; display: flex; gap: 6px; flex-wrap: wrap; }
+    .tooltip-tag {
+      font-size: 11px; color: var(--text-faint);
+      border: 1px solid rgba(201,169,110,0.2); border-radius: 999px; padding: 2px 8px;
+    }
+    #legend {
+      position: absolute; bottom: 24px; left: 20px; z-index: 10;
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .legend-item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-faint); }
+    .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+    /* ── AVANTI BTN ──────────────────────────────────────── */
+    .btn-avanti {
+      padding: 12px 48px; border: 1px solid var(--accent);
+      background: var(--accent); color: var(--bg);
+      font-family: 'Space Grotesk', sans-serif; font-size: 15px;
+      font-weight: 500; cursor: pointer; letter-spacing: 0.06em; transition: all .3s;
+    }
+    .btn-avanti:hover { background: transparent; color: var(--accent); }
+    .btn-avanti:disabled {
+      background: transparent; color: rgba(201,169,110,0.35);
+      border-color: rgba(201,169,110,0.2); cursor: not-allowed;
+    }
+
+    /* ── TOOLTIP OVERLAY ─────────────────────────────────── */
+    .overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(10,10,15,0.88); z-index: 500;
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .overlay.show { display: flex; }
+    .overlay-box {
+      background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 12px; padding: 36px; max-width: 440px; text-align: center;
+    }
+    .overlay-text {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 19px; color: var(--text); line-height: 1.75; font-style: italic;
+    }
+    .btn-close {
+      margin-top: 24px; padding: 8px 32px;
+      border: 1px solid var(--border-strong); background: transparent;
+      color: var(--accent); font-family: 'Space Grotesk', sans-serif;
+      font-size: 13px; cursor: pointer; border-radius: 4px;
+    }
+
+    /* ── RESPONSIVE ──────────────────────────────────────── */
+    @media (max-width: 600px) {
+      .img-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <span class="nav-label">Doppia Libertà —</span>
+  <button class="nav-btn active" onclick="showScreen('landing')">Landing</button>
+  <button class="nav-btn" onclick="showScreen('moduleA')">① Trama Emotiva</button>
+  <button class="nav-btn" onclick="showScreen('moduleB')">② Pratica Empatica</button>
+  <button class="nav-btn" onclick="showScreen('moduleC')">③ Percezione Temporale</button>
+  <button class="nav-btn" onclick="showScreen('avatar')">Avatar Preview</button>
+  <button class="nav-btn" onclick="showScreen('space')">Spazio Condiviso</button>
+</nav>
+
+<!-- ════════════════ SCREEN 1: LANDING ════════════════ -->
+<section class="screen active" id="screen-landing">
+  <canvas id="dots-canvas"></canvas>
+  <div class="inner">
+    <div class="landing-content">
+      <div class="landing-note">Un'esperienza collettiva</div>
+      <h1 class="landing-title font-c">Doppia<br>Libertà</h1>
+      <p class="landing-sub">
+        Uno spazio condiviso in cui la tua pratica artistica prende forma attraverso emozione, gesto e tempo.
+      </p>
+      <button class="btn-primary" onclick="showScreen('moduleA')">Entra nello spazio →</button>
+    </div>
+  </div>
+</section>
+
+<!-- ════════════════ SCREEN 2: MODULE A ════════════════ -->
+<section class="screen" id="screen-moduleA">
+  <div class="step-bar">
+    <div class="step-dot done" id="sdA1">1</div>
+    <div class="step-line"></div>
+    <div class="step-dot" id="sdA2">2</div>
+    <div class="step-line"></div>
+    <div class="step-dot" id="sdA3">3</div>
+  </div>
+  <div class="module-wrap">
+    <div class="module-header">
+      <h2 class="module-title font-c">Trama Emotiva</h2>
+      <p class="module-desc">Ordina queste immagini secondo quello che senti, poi scegli un'emozione per ognuna.</p>
+      <button class="q-btn" onclick="showOverlay('overlayA')">?</button>
+    </div>
+
+    <div class="img-grid" id="img-grid">
+      <!-- generated by JS -->
+    </div>
+
+    <p class="rank-hint" id="rank-hint">Clicca le immagini nell'ordine che senti — stai assegnando il rango <span id="rank-num">1</span></p>
+
+    <button class="btn-avanti" id="btn-avanti-a" disabled onclick="showScreen('moduleB')">Avanti</button>
+  </div>
+</section>
+
+<!-- ════════════════ SCREEN 3: MODULE B ════════════════ -->
+<section class="screen" id="screen-moduleB">
+  <div class="step-bar">
+    <div class="step-dot done">1</div>
+    <div class="step-line"></div>
+    <div class="step-dot active done" id="sdB2">2</div>
+    <div class="step-line"></div>
+    <div class="step-dot" id="sdB3">3</div>
+  </div>
+  <div class="module-wrap">
+    <div class="module-header">
+      <h2 class="module-title font-c">Pratica Empatica</h2>
+      <p class="module-desc">Descrivi un'azione quotidiana inconsapevole che senti connessa al tuo fare arte.</p>
+      <button class="q-btn" onclick="showOverlay('overlayB')">?</button>
+    </div>
+
+    <div class="field-wrap">
+      <textarea id="textB" maxlength="200" placeholder="Descrivi la tua azione quotidiana..." oninput="updateB()"></textarea>
+      <div class="char-count"><span id="charB">0</span> / 200</div>
+    </div>
+
+    <div class="field-wrap">
+      <p style="font-size:13px;color:var(--text-faint);margin-bottom:14px;">Scegli il gesto che ti rappresenta:</p>
+      <div class="gestures">
+        <button class="gesture-btn" onclick="selectGesture('ripetere',this)"><span class="gesture-icon">🔁</span> ripetere</button>
+        <button class="gesture-btn" onclick="selectGesture('costruire',this)"><span class="gesture-icon">🔨</span> costruire</button>
+        <button class="gesture-btn" onclick="selectGesture('osservare',this)"><span class="gesture-icon">👁</span> osservare</button>
+        <button class="gesture-btn" onclick="selectGesture('interrompere',this)"><span class="gesture-icon">✂️</span> interrompere</button>
+        <button class="gesture-btn" onclick="selectGesture('raccogliere',this)"><span class="gesture-icon">🫙</span> raccogliere</button>
+      </div>
+    </div>
+
+    <button class="btn-avanti" id="btn-avanti-b" disabled onclick="showScreen('moduleC')">Avanti</button>
+  </div>
+</section>
+
+<!-- ════════════════ SCREEN 4: MODULE C ════════════════ -->
+<section class="screen" id="screen-moduleC">
+  <div class="step-bar">
+    <div class="step-dot done">1</div>
+    <div class="step-line"></div>
+    <div class="step-dot done">2</div>
+    <div class="step-line"></div>
+    <div class="step-dot active">3</div>
+  </div>
+  <div class="module-wrap">
+    <div class="module-header">
+      <h2 class="module-title font-c">Dispositivo di Percezione Temporale</h2>
+      <p class="module-desc">Qual è il tuo orologio personale? Una persona, un luogo, un oggetto che ogni volta che incontri ti cambia.</p>
+      <button class="q-btn" onclick="showOverlay('overlayC')">?</button>
+    </div>
+
+    <div class="field-wrap">
+      <textarea id="textC" maxlength="150" style="height:100px" placeholder="Il mio orologio personale è..." oninput="updateC()"></textarea>
+      <div class="char-count"><span id="charC">0</span> / 150</div>
+    </div>
+
+    <div class="field-wrap" style="max-width:600px;width:100%">
+      <div class="tempo-labels">
+        <span class="tempo-label">lento</span>
+        <span class="tempo-label">veloce</span>
+      </div>
+      <input type="range" id="tempo-slider" min="0" max="1" step="0.01" value="0.5" oninput="updateTempo(this)">
+    </div>
+
+    <button class="btn-avanti" onclick="showScreen('avatar')">Avanti</button>
+  </div>
+</section>
+
+<!-- ════════════════ SCREEN 5: AVATAR PREVIEW ════════════════ -->
+<section class="screen" id="screen-avatar">
+  <div class="inner">
+    <div class="avatar-canvas-wrap">
+      <canvas id="avatar-canvas" width="280" height="280"></canvas>
+    </div>
+    <div class="avatar-info">
+      <div class="avatar-name">Il tuo avatar</div>
+      <p class="avatar-reading font-c" id="avatar-reading">
+        Un artista che osserva il mondo con meraviglia.<br>
+        Il suo tempo scorre attraverso la luce che cambia sulle case al tramonto.
+      </p>
+      <div class="avatar-tags">
+        <span class="avatar-tag" id="av-emotion">meraviglia</span>
+        <span class="avatar-tag" id="av-gesture">osservare</span>
+        <span class="avatar-tag" id="av-shape">forma ibrida</span>
+        <span class="avatar-tag" id="av-tempo">tempo medio</span>
+      </div>
+    </div>
+    <button class="btn-enter" onclick="showScreen('space')">Entra nello spazio condiviso →</button>
+  </div>
+</section>
+
+<!-- ════════════════ SCREEN 6: SHARED SPACE ════════════════ -->
+<section class="screen" id="screen-space" style="height:100vh;">
+  <canvas id="space-canvas"></canvas>
+  <div id="space-ui">
+    <div class="space-title font-c">Spazio Condiviso</div>
+    <div class="space-count" id="space-count">13 artisti presenti</div>
+  </div>
+  <div id="avatar-tooltip">
+    <div id="tt-header" style="display:flex;align-items:center;font-size:12px;color:var(--text-faint);letter-spacing:.06em;text-transform:uppercase"></div>
+    <div class="tooltip-reading" id="tt-reading"></div>
+    <div class="tooltip-tags" id="tt-tags"></div>
+  </div>
+  <div id="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#6e7fc9"></div>malinconia</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c96e6e"></div>tensione</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c9a96e"></div>meraviglia</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#6ec9a9"></div>quiete</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a96ec9"></div>inquietudine</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#c9c96e"></div>gioia</div>
+  </div>
+</section>
+
+<!-- ════════════════ OVERLAYS ════════════════ -->
+<div class="overlay" id="overlayA" onclick="if(event.target===this)hideOverlay('overlayA')">
+  <div class="overlay-box">
+    <p class="overlay-text font-c">Il modo in cui ordini le emozioni rivela le chiavi di lettura che usi per interpretare l'arte. Queste coordinate costruiranno la tua posizione nello spazio condiviso.</p>
+    <button class="btn-close" onclick="hideOverlay('overlayA')">Chiudi</button>
+  </div>
+</div>
+<div class="overlay" id="overlayB" onclick="if(event.target===this)hideOverlay('overlayB')">
+  <div class="overlay-box">
+    <p class="overlay-text font-c">Le azioni inconsapevoli sono le fondamenta invisibili della pratica artistica. Il sistema le codificherà nel movimento del tuo avatar — la tua firma cinetica.</p>
+    <button class="btn-close" onclick="hideOverlay('overlayB')">Chiudi</button>
+  </div>
+</div>
+<div class="overlay" id="overlayC" onclick="if(event.target===this)hideOverlay('overlayC')">
+  <div class="overlay-box">
+    <p class="overlay-text font-c">Ognuno ha un ritmo interno che scandisce il proprio essere artista. Il tuo "orologio" diventerà il battito con cui il tuo avatar si muoverà nello spazio.</p>
+    <button class="btn-close" onclick="hideOverlay('overlayC')">Chiudi</button>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────
+const EMOTIONS = ['malinconia','tensione','meraviglia','quiete','inquietudine','gioia'];
+const EMOTION_COLORS = {
+  malinconia:'#6e7fc9', tensione:'#c96e6e', meraviglia:'#c9a96e',
+  quiete:'#6ec9a9', inquietudine:'#a96ec9', gioia:'#c9c96e',
+};
+const MOCK_AVATARS = [
+  {id:'m01',color:'#6e7fc9',shapeType:'round',pulseSpeed:1.7,gesture:'raccogliere',emotion:'malinconia',poeticReading:'Un artista che raccoglie il mondo con malinconia. Il suo tempo scorre attraverso il vecchio orologio della nonna.',position:[-6,1]},
+  {id:'m02',color:'#c96e6e',shapeType:'angular',pulseSpeed:0.73,gesture:'interrompere',emotion:'tensione',poeticReading:'Un artista che interrompe il mondo con tensione. Il suo tempo scorre attraverso un cantiere abbandonato che continua a crescere.',position:[5,-2]},
+  {id:'m03',color:'#c9a96e',shapeType:'hybrid',pulseSpeed:1.25,gesture:'osservare',emotion:'meraviglia',poeticReading:'Un artista che osserva il mondo con meraviglia. Il suo tempo scorre attraverso la luce che cambia sulle case al tramonto.',position:[2,2]},
+  {id:'m04',color:'#6ec9a9',shapeType:'round',pulseSpeed:1.78,gesture:'ripetere',emotion:'quiete',poeticReading:'Un artista che ripete il mondo con quiete. Il suo tempo scorre attraverso la pioggia sul vetro ogni mattina.',position:[-3,-1]},
+  {id:'m05',color:'#a96ec9',shapeType:'angular',pulseSpeed:0.95,gesture:'costruire',emotion:'inquietudine',poeticReading:'Un artista che costruisce il mondo con inquietudine. Il suo tempo scorre attraverso il suono dei passi nel corridoio vuoto.',position:[7,0]},
+  {id:'m06',color:'#c9c96e',shapeType:'round',pulseSpeed:1.1,gesture:'raccogliere',emotion:'gioia',poeticReading:'Un artista che raccoglie il mondo con gioia. Il suo tempo scorre attraverso i mercati del sabato mattina.',position:[-5,2]},
+  {id:'m07',color:'#6e7fc9',shapeType:'hybrid',pulseSpeed:1.55,gesture:'osservare',emotion:'malinconia',poeticReading:'Un artista che osserva il mondo con malinconia. Il suo tempo scorre attraverso le fotografie ingiallite di luoghi mai visitati.',position:[0,-3]},
+  {id:'m08',color:'#c9a96e',shapeType:'angular',pulseSpeed:1.33,gesture:'costruire',emotion:'meraviglia',poeticReading:'Un artista che costruisce il mondo con meraviglia. Il suo tempo scorre attraverso la prima pagina di ogni libro trovato per caso.',position:[-7,-2]},
+  {id:'m09',color:'#6ec9a9',shapeType:'round',pulseSpeed:1.85,gesture:'ripetere',emotion:'quiete',poeticReading:'Un artista che ripete il mondo con quiete. Il suo tempo scorre attraverso il gatto che ritorna ogni sera alla stessa ora.',position:[4,3]},
+  {id:'m10',color:'#c96e6e',shapeType:'angular',pulseSpeed:0.65,gesture:'interrompere',emotion:'tensione',poeticReading:'Un artista che interrompe il mondo con tensione. Il suo tempo scorre attraverso le conversazioni spezzate in mezzo alla strada.',position:[-2,1]},
+  {id:'m11',color:'#a96ec9',shapeType:'round',pulseSpeed:1.4,gesture:'raccogliere',emotion:'inquietudine',poeticReading:'Un artista che raccoglie il mondo con inquietudine. Il suo tempo scorre attraverso gli oggetti dimenticati sui davanzali.',position:[6,-1]},
+  {id:'m12',color:'#c9c96e',shapeType:'hybrid',pulseSpeed:1.18,gesture:'osservare',emotion:'gioia',poeticReading:'Un artista che osserva il mondo con gioia. Il suo tempo scorre attraverso il momento in cui i bambini smettono di correre.',position:[-4,-3]},
+];
+// User avatar
+const USER_AVATAR = {
+  id:'user', color:'#c9a96e', shapeType:'hybrid', pulseSpeed:1.25,
+  gesture:'osservare', emotion:'meraviglia',
+  poeticReading:'Un artista che osserva il mondo con meraviglia. Il suo tempo scorre attraverso la luce che cambia sulle case al tramonto.',
+  position:[0.5, 0.5], isUser:true
+};
+
+// ── SCREEN NAV ────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  const idx = ['landing','moduleA','moduleB','moduleC','avatar','space'].indexOf(id);
+  document.querySelectorAll('.nav-btn')[idx]?.classList.add('active');
+  if (id === 'landing') initDots();
+  if (id === 'avatar') drawAvatarCanvas();
+  if (id === 'space') initSpace();
+}
+function showOverlay(id) { document.getElementById(id).classList.add('show'); }
+function hideOverlay(id) { document.getElementById(id).classList.remove('show'); }
+
+// ── LANDING DOTS ─────────────────────────────────────────
+let dotsRAF;
+function initDots() {
+  const canvas = document.getElementById('dots-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+  const dots = Array.from({length:45}, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    r: Math.random() * 1.5 + 0.5,
+    vx: (Math.random() - 0.5) * 0.3,
+    vy: (Math.random() - 0.5) * 0.3,
+    op: Math.random() * 0.45 + 0.08,
+  }));
+  cancelAnimationFrame(dotsRAF);
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    for (const d of dots) {
+      d.x += d.vx; d.y += d.vy;
+      if (d.x < 0) d.x = canvas.width;
+      if (d.x > canvas.width) d.x = 0;
+      if (d.y < 0) d.y = canvas.height;
+      if (d.y > canvas.height) d.y = 0;
+      ctx.beginPath();
+      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${d.op})`;
+      ctx.fill();
+    }
+    dotsRAF = requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ── MODULE A ──────────────────────────────────────────────
+const imgSeeds = ['forest','ocean','mountain','city','abstract','macro'];
+let rankCounter = 1;
+const answers = {};
+
+function buildImgGrid() {
+  const grid = document.getElementById('img-grid');
+  grid.innerHTML = '';
+  for (let i = 0; i < 6; i++) {
+    const id = i + 1;
+    const div = document.createElement('div');
+    div.className = 'img-card';
+    div.innerHTML = `
+      <div class="img-wrap" id="wrap-${id}" onclick="rankImage(${id})">
+        <img src="https://picsum.photos/seed/art${id}/300/200" alt="immagine ${id}" loading="lazy">
+        <div class="rank-badge" id="badge-${id}" style="display:none">${id}</div>
+      </div>
+      <select class="emotion-select" id="sel-${id}" onchange="setEmotion(${id}, this.value)">
+        <option value="" disabled selected>emozione</option>
+        ${EMOTIONS.map(e=>`<option value="${e}">${e}</option>`).join('')}
+      </select>`;
+    grid.appendChild(div);
+  }
+}
+function rankImage(id) {
+  if (answers[id]?.rank || rankCounter > 6) return;
+  answers[id] = {...(answers[id]||{}), rank: rankCounter};
+  document.getElementById('wrap-'+id).classList.add('ranked');
+  const badge = document.getElementById('badge-'+id);
+  badge.textContent = rankCounter;
+  badge.style.display = 'flex';
+  rankCounter++;
+  document.getElementById('rank-num').textContent = Math.min(rankCounter, 6);
+  if (rankCounter > 6) document.getElementById('rank-hint').style.opacity = '0';
+  checkA();
+}
+function setEmotion(id, val) {
+  answers[id] = {...(answers[id]||{}), emotion: val};
+  checkA();
+}
+function checkA() {
+  const ranked = Object.values(answers).filter(a=>a.rank).length === 6;
+  const emotioned = Object.values(answers).filter(a=>a.emotion).length === 6;
+  document.getElementById('btn-avanti-a').disabled = !(ranked && emotioned);
+}
+
+// ── MODULE B ──────────────────────────────────────────────
+let selectedGesture = '';
+function updateB() {
+  const v = document.getElementById('textB').value;
+  document.getElementById('charB').textContent = v.length;
+  checkB();
+}
+function selectGesture(g, el) {
+  selectedGesture = g;
+  document.querySelectorAll('.gesture-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  checkB();
+}
+function checkB() {
+  document.getElementById('btn-avanti-b').disabled = !selectedGesture;
+}
+
+// ── MODULE C ──────────────────────────────────────────────
+function updateC() {
+  document.getElementById('charC').textContent = document.getElementById('textC').value.length;
+}
+function updateTempo(el) {
+  const pct = (el.value * 100).toFixed(1) + '%';
+  el.style.setProperty('--pct', pct);
+}
+// init slider
+document.addEventListener('DOMContentLoaded', () => {
+  updateTempo(document.getElementById('tempo-slider'));
+});
+
+// ── AVATAR CANVAS ─────────────────────────────────────────
+function drawAvatarCanvas() {
+  const canvas = document.getElementById('avatar-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = 280, H = 280, cx = 140, cy = 140;
+  const color = USER_AVATAR.color;
+  let t = 0;
+  let avRAF;
+
+  function hex2rgb(hex) {
+    const r = parseInt(hex.slice(1,3),16);
+    const g = parseInt(hex.slice(3,5),16);
+    const b = parseInt(hex.slice(5,7),16);
+    return {r,g,b};
+  }
+  const {r,g,b} = hex2rgb(color);
+
+  function drawFrame() {
+    ctx.clearRect(0,0,W,H);
+    t += 0.02;
+    const pulse = 1 + Math.sin(t * USER_AVATAR.pulseSpeed) * 0.08;
+    const baseR = 70 * pulse;
+
+    // Glow
+    const grd = ctx.createRadialGradient(cx,cy,baseR*0.3,cx,cy,baseR*1.8);
+    grd.addColorStop(0, `rgba(${r},${g},${b},0.25)`);
+    grd.addColorStop(1, `rgba(${r},${g},${b},0)`);
+    ctx.beginPath();
+    ctx.arc(cx,cy,baseR*1.8,0,Math.PI*2);
+    ctx.fillStyle = grd;
+    ctx.fill();
+
+    // Shape
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(t * 0.1);
+    ctx.beginPath();
+    if (USER_AVATAR.shapeType === 'round') {
+      ctx.arc(0, 0, baseR, 0, Math.PI*2);
+    } else if (USER_AVATAR.shapeType === 'angular') {
+      const n = 6;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 - Math.PI/2;
+        const x = Math.cos(a) * baseR;
+        const y = Math.sin(a) * baseR;
+        i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+    } else {
+      // hybrid: rounded polygon
+      const n = 5;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2 - Math.PI/2;
+        const x = Math.cos(a) * baseR;
+        const y = Math.sin(a) * baseR;
+        i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+      }
+      ctx.closePath();
+    }
+    const g2 = ctx.createRadialGradient(0, -baseR*0.3, baseR*0.05, 0, 0, baseR);
+    g2.addColorStop(0, `rgba(${r},${g},${b},0.95)`);
+    g2.addColorStop(1, `rgba(${Math.max(r-40,0)},${Math.max(g-40,0)},${Math.max(b-40,0)},0.75)`);
+    ctx.fillStyle = g2;
+    ctx.fill();
+    ctx.strokeStyle = `rgba(${r},${g},${b},0.6)`;
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    ctx.restore();
+
+    avRAF = requestAnimationFrame(drawFrame);
+  }
+  cancelAnimationFrame(avRAF);
+  drawFrame();
+}
+
+// ── SHARED SPACE ──────────────────────────────────────────
+let spaceRAF;
+let spaceAvatars = [];
+let hoveredAvatar = null;
+let mouseX = 0, mouseY = 0;
+
+function initSpace() {
+  const canvas = document.getElementById('space-canvas');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight - 49;
+  canvas.style.top = '49px';
+
+  // Project 3D positions to 2D
+  const allAvatars = [...MOCK_AVATARS, USER_AVATAR];
+  const W = canvas.width, H = canvas.height;
+
+  spaceAvatars = allAvatars.map(av => {
+    const [px, py] = av.position;
+    // Map [-8,8] to canvas with perspective-ish projection
+    const scale = 0.95 + (py / 8) * 0.15;
+    return {
+      ...av,
+      cx: W/2 + px * (W / 20),
+      cy: H/2 + py * (H / 12),
+      baseR: (av.isUser ? 16 : 10 + Math.random() * 8) * scale,
+      t: Math.random() * Math.PI * 2,
+      hex2rgb: function() {
+        const h = this.color;
+        return {
+          r: parseInt(h.slice(1,3),16),
+          g: parseInt(h.slice(3,5),16),
+          b: parseInt(h.slice(5,7),16),
+        };
+      }
+    };
+  });
+
+  canvas.addEventListener('mousemove', (e) => {
+    const rect = canvas.getBoundingClientRect();
+    mouseX = e.clientX - rect.left;
+    mouseY = e.clientY - rect.top;
+
+    hoveredAvatar = null;
+    for (const av of spaceAvatars) {
+      const dist = Math.hypot(mouseX - av.cx, mouseY - av.cy);
+      if (dist < av.baseR * 2.5) { hoveredAvatar = av; break; }
+    }
+
+    const tt = document.getElementById('avatar-tooltip');
+    if (hoveredAvatar) {
+      tt.style.display = 'block';
+      tt.style.left = (mouseX + 16) + 'px';
+      tt.style.top = (mouseY + 16) + 'px';
+      document.getElementById('tt-header').innerHTML =
+        `<span class="tooltip-color" style="background:${hoveredAvatar.color}"></span>${hoveredAvatar.emotion} · ${hoveredAvatar.gesture}`;
+      document.getElementById('tt-reading').textContent = hoveredAvatar.poeticReading;
+      document.getElementById('tt-tags').innerHTML =
+        `<span class="tooltip-tag">${hoveredAvatar.shapeType}</span>
+         <span class="tooltip-tag">${hoveredAvatar.isUser ? '👤 tu' : 'artista'}</span>`;
+    } else {
+      tt.style.display = 'none';
+    }
+  });
+
+  // Build connection groups (same emotion)
+  const emotionGroups = {};
+  for (const av of spaceAvatars) {
+    if (!emotionGroups[av.emotion]) emotionGroups[av.emotion] = [];
+    emotionGroups[av.emotion].push(av);
+  }
+
+  const ctx = canvas.getContext('2d');
+  cancelAnimationFrame(spaceRAF);
+
+  function drawSpace() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Background gradient
+    const bg = ctx.createRadialGradient(W/2, H/2, 50, W/2, H/2, Math.max(W,H));
+    bg.addColorStop(0, '#12121f');
+    bg.addColorStop(1, '#0a0a0f');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,W,H);
+
+    // Connection lines between same-emotion avatars
+    for (const [emotion, group] of Object.entries(emotionGroups)) {
+      if (group.length < 2) continue;
+      const {r,g,b} = group[0].hex2rgb();
+      for (let i = 0; i < group.length - 1; i++) {
+        for (let j = i+1; j < group.length; j++) {
+          const a = group[i], b2 = group[j];
+          const dist = Math.hypot(a.cx - b2.cx, a.cy - b2.cy);
+          if (dist > 350) continue;
+          const alpha = Math.max(0, 0.12 - dist/3500);
+          ctx.beginPath();
+          ctx.moveTo(a.cx, a.cy);
+          ctx.lineTo(b2.cx, b2.cy);
+          ctx.strokeStyle = `rgba(${r},${g},${b},${alpha})`;
+          ctx.lineWidth = 0.8;
+          ctx.stroke();
+        }
+      }
+    }
+
+    // Draw avatars
+    for (const av of spaceAvatars) {
+      av.t += 0.012 / av.pulseSpeed;
+      const pulse = 1 + Math.sin(av.t * av.pulseSpeed) * 0.1;
+      const r = av.baseR * pulse;
+      const isHov = av === hoveredAvatar;
+      const {r:cr,g:cg,b:cb} = av.hex2rgb();
+
+      // Outer glow
+      const grd = ctx.createRadialGradient(av.cx,av.cy,r*0.2,av.cx,av.cy,r*(isHov?2.5:2));
+      grd.addColorStop(0, `rgba(${cr},${cg},${cb},${isHov?0.3:0.15})`);
+      grd.addColorStop(1, `rgba(${cr},${cg},${cb},0)`);
+      ctx.beginPath();
+      ctx.arc(av.cx, av.cy, r*2.5, 0, Math.PI*2);
+      ctx.fillStyle = grd;
+      ctx.fill();
+
+      // Shape
+      ctx.save();
+      ctx.translate(av.cx, av.cy);
+      ctx.rotate(av.t * 0.05);
+      ctx.beginPath();
+      if (av.shapeType === 'round') {
+        ctx.arc(0,0,r,0,Math.PI*2);
+      } else if (av.shapeType === 'angular') {
+        const n = av.isUser ? 6 : 4 + Math.floor(Math.random()*3);
+        for (let i=0;i<6;i++) {
+          const ang = (i/6)*Math.PI*2-Math.PI/2;
+          i===0?ctx.moveTo(Math.cos(ang)*r,Math.sin(ang)*r):ctx.lineTo(Math.cos(ang)*r,Math.sin(ang)*r);
+        }
+        ctx.closePath();
+      } else {
+        for (let i=0;i<5;i++) {
+          const ang = (i/5)*Math.PI*2-Math.PI/2;
+          i===0?ctx.moveTo(Math.cos(ang)*r,Math.sin(ang)*r):ctx.lineTo(Math.cos(ang)*r,Math.sin(ang)*r);
+        }
+        ctx.closePath();
+      }
+      const g2 = ctx.createRadialGradient(0,-r*0.3,1,0,0,r);
+      g2.addColorStop(0,`rgba(${cr},${cg},${cb},${isHov?1:0.9})`);
+      g2.addColorStop(1,`rgba(${Math.max(cr-50,0)},${Math.max(cg-50,0)},${Math.max(cb-50,0)},0.6)`);
+      ctx.fillStyle = g2;
+      ctx.fill();
+      if (av.isUser) {
+        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+        ctx.lineWidth = 1.5;
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // User label
+      if (av.isUser) {
+        ctx.fillStyle = 'rgba(240,237,232,0.6)';
+        ctx.font = '10px "Space Grotesk", sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('tu', av.cx, av.cy + r + 14);
+      }
+    }
+
+    spaceRAF = requestAnimationFrame(drawSpace);
+  }
+  drawSpace();
+}
+
+// ── INIT ──────────────────────────────────────────────────
+buildImgGrid();
+initDots();
+
+window.addEventListener('resize', () => {
+  const canvas = document.getElementById('dots-canvas');
+  if (canvas.offsetWidth) { canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight; }
+});
+</script>
+</body>
+</html>
