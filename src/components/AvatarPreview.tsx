@@ -175,7 +175,7 @@ export default function AvatarPreview({ avatar, onEnter }: AvatarPreviewProps) {
           }}
         />
         <span className="font-space" style={{ fontSize: '13px', color: 'rgba(240,237,232,0.5)' }}>
-          {avatar.shapeType} · {avatar.gesture}
+          {avatar.shapeType}
         </span>
       </div>
 

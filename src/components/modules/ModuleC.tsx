@@ -43,7 +43,7 @@ export default function ModuleC({ onComplete }: ModuleCProps) {
           className="font-space"
           style={{ fontSize: '15px', color: 'rgba(240,237,232,0.6)', maxWidth: '480px', margin: '0 auto' }}
         >
-          Qual è il tuo orologio personale? Una persona, un luogo, un oggetto che ogni volta che incontri ti cambia.
+          Qual è il tuo orologio personale? Una persona, un luogo, un oggetto che quando lo incontri nuovamente ti fa capire quanto sei cambiato dall'ultima volta in cui lo hai visto?
         </p>
         <button
           onClick={() => setShowTooltip(true)}

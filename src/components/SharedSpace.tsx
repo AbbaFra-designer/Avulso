@@ -172,7 +172,7 @@ export default function SharedSpace({ userAvatar }: SharedSpaceProps) {
           letterSpacing: '0.05em',
         }}
       >
-        Doppia Libertà
+        AVULSO
       </div>
     </motion.div>
   );

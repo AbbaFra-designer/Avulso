@@ -7,7 +7,7 @@ export interface EmotionAnswer {
 export interface AvatarData {
   id: string;
   emotionAnswers: EmotionAnswer[];
-  gesture: string;         // "ripetere" | "costruire" | "osservare" | "interrompere" | "raccogliere"
+  mirrorText: string;
   tempoDescription: string;
   tempoValue: number;      // 0 to 1
   color: string;           // hex
@@ -21,7 +21,7 @@ export type AppStep = "landing" | "onboarding" | "avatar-preview" | "shared-spac
 
 export interface OnboardingData {
   emotionAnswers: EmotionAnswer[];
-  gesture: string;
+  mirrorText: string;
   tempoDescription: string;
   tempoValue: number;
 }

@@ -11,7 +11,7 @@ const emotionColors: Record<string, string> = {
 
 export function generateAvatar(
   emotionAnswers: EmotionAnswer[],
-  gesture: string,
+  mirrorText: string,
   tempoDescription: string,
   tempoValue: number
 ): AvatarData {
@@ -22,11 +22,11 @@ export function generateAvatar(
   // Color from top emotion
   const color = emotionColors[topEmotion] || '#c9a96e';
 
-  // Shape from gesture
+  // Shape from top emotion
   let shapeType: string;
-  if (gesture === 'ripetere' || gesture === 'raccogliere') {
+  if (topEmotion === 'malinconia' || topEmotion === 'quiete') {
     shapeType = 'round';
-  } else if (gesture === 'interrompere' || gesture === 'costruire') {
+  } else if (topEmotion === 'tensione' || topEmotion === 'inquietudine') {
     shapeType = 'angular';
   } else {
     shapeType = 'hybrid';
@@ -45,20 +45,12 @@ export function generateAvatar(
   ];
 
   // Poetic reading
-  const gestureMap: Record<string, string> = {
-    ripetere: 'ripete',
-    costruire: 'costruisce',
-    osservare: 'osserva',
-    interrompere: 'interrompe',
-    raccogliere: 'raccoglie',
-  };
-  const verb = gestureMap[gesture] || gesture;
-  const poeticReading = `Un artista che ${verb} il mondo con ${topEmotion}. Il suo tempo scorre attraverso ${tempoDescription || 'il silenzio delle cose quotidiane'}.`;
+  const poeticReading = `Un artista che abita il mondo con ${topEmotion}. Il suo tempo scorre attraverso ${tempoDescription || 'il silenzio delle cose quotidiane'}.`;
 
   return {
     id: crypto.randomUUID(),
     emotionAnswers,
-    gesture,
+    mirrorText,
     tempoDescription,
     tempoValue,
     color,

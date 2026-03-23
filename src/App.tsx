@@ -27,7 +27,7 @@ function App() {
   const handleOnboardingComplete = (data: OnboardingData) => {
     const avatar = generateAvatar(
       data.emotionAnswers,
-      data.gesture,
+      data.mirrorText,
       data.tempoDescription,
       data.tempoValue
     );

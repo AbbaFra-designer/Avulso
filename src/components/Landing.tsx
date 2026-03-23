@@ -90,7 +90,7 @@ export default function Landing({ onEnter }: LandingProps) {
             lineHeight: 1.1,
           }}
         >
-          Doppia Libertà
+          AVULSO
         </h1>
 
         <p

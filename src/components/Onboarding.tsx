@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { OnboardingData, EmotionAnswer } from '../types';
 import ModuleA from './modules/ModuleA';
-import ModuleB from './modules/ModuleB';
+import ModuleMirror from './modules/ModuleMirror';
 import ModuleC from './modules/ModuleC';
 
 interface OnboardingProps {
@@ -12,22 +12,24 @@ interface OnboardingProps {
 export default function Onboarding({ onComplete }: OnboardingProps) {
   const [moduleIndex, setModuleIndex] = useState(0);
   const [emotionAnswers, setEmotionAnswers] = useState<EmotionAnswer[]>([]);
-  const [gesture, setGesture] = useState('');
+  const [mirrorText, setMirrorText] = useState('');
+
+  const TOTAL = 3;
 
   const handleModuleAComplete = (answers: EmotionAnswer[]) => {
     setEmotionAnswers(answers);
     setModuleIndex(1);
   };
 
-  const handleModuleBComplete = (g: string) => {
-    setGesture(g);
+  const handleModuleMirrorComplete = (text: string) => {
+    setMirrorText(text);
     setModuleIndex(2);
   };
 
   const handleModuleCComplete = (desc: string, val: number) => {
     onComplete({
       emotionAnswers,
-      gesture,
+      mirrorText,
       tempoDescription: desc,
       tempoValue: val,
     });
@@ -59,14 +61,18 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           alignItems: 'center',
         }}
       >
-        {[0, 1, 2].map((i) => (
+        {Array.from({ length: TOTAL }, (_, i) => i).map((i) => (
           <div
             key={i}
             style={{
               width: i === moduleIndex ? '24px' : '8px',
               height: '8px',
               borderRadius: '4px',
-              background: i === moduleIndex ? '#c9a96e' : 'rgba(201,169,110,0.3)',
+              background: i === moduleIndex
+                ? '#c9a96e'
+                : i < moduleIndex
+                ? 'rgba(201,169,110,0.55)'
+                : 'rgba(201,169,110,0.3)',
               transition: 'all 300ms ease',
             }}
           />
@@ -79,7 +85,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             fontSize: '13px',
           }}
         >
-          {moduleIndex + 1} / 3
+          {moduleIndex + 1} / {TOTAL}
         </span>
       </div>
 
@@ -88,7 +94,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
           <ModuleA key="a" onComplete={handleModuleAComplete} />
         )}
         {moduleIndex === 1 && (
-          <ModuleB key="b" onComplete={handleModuleBComplete} initialGesture={gesture} />
+          <ModuleMirror key="mirror" onComplete={handleModuleMirrorComplete} />
         )}
         {moduleIndex === 2 && (
           <ModuleC key="c" onComplete={handleModuleCComplete} />
